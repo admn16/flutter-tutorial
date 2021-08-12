@@ -17,35 +17,38 @@ class _MyAppState extends State<MyApp> {
     {
       'questionText': 'What\'s your favorite color?',
       'answers': [
-        'Black',
-        'Red',
-        'Green',
-        'White',
+        {'text': 'Black', 'score': 10},
+        {'text': 'Red', 'score': 7},
+        {'text': 'Green', 'score': 3},
+        {'text': 'White', 'score': 1},
       ],
     },
     {
       'questionText': 'What\'s your favorite animal?',
       'answers': [
-        'Rabbit',
-        'Snake',
-        'Elephant',
-        'Lion',
+        {'text': 'Rabbit', 'score': 1},
+        {'text': 'Snake', 'score': 10},
+        {'text': 'Elephant', 'score': 4},
+        {'text': 'Lion', 'score': 6},
       ],
     },
     {
       'questionText': 'Who\'s your favorite instructor?',
       'answers': [
-        'Max',
-        'Max',
-        'Max',
-        'Max',
+        {'text': 'Bb', 'score': 10},
+        {'text': 'Simon', 'score': 6},
+        {'text': 'Max', 'score': 9},
+        {'text': 'Samson', 'score': 0},
       ],
     },
   ];
 
   var _questionIndex = 0;
+  var _totalScore = 0;
 
-  void _answerQuestion() {
+  void _answerQuestion(int score) {
+    _totalScore += score;
+
     setState(() {
       _questionIndex = _questionIndex + 1;
     });
@@ -54,6 +57,13 @@ class _MyAppState extends State<MyApp> {
     } else {
       print('No more questions!');
     }
+  }
+
+  void _resetQuiz() {
+    setState(() {
+      _questionIndex = 0;
+      _totalScore = 0;
+    });
   }
 
   // `@override` is optional but helps make the code look clearer. It means that we're overriding the build method on the `StatelessWidget` class.
@@ -70,7 +80,7 @@ class _MyAppState extends State<MyApp> {
                 questionIndex: _questionIndex,
                 questions: _questions,
               )
-            : Result(),
+            : Result(_totalScore, _resetQuiz),
       ),
     );
   }
