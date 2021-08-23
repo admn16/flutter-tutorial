@@ -53,28 +53,28 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   final List<Transaction> _userTransactions = [
-    // Transaction(
-    //   id: 't1',
-    //   title: 'New Shoes',
-    //   amount: 69.99,
-    //   date: DateTime.now().subtract(
-    //     Duration(days: 1),
-    //   ),
-    // ),
-    // Transaction(
-    //   id: 't2',
-    //   title: 'Weekly Groceries',
-    //   amount: 16.53,
-    //   date: DateTime.now(),
-    // ),
-    // Transaction(
-    //   id: 't3',
-    //   title: 'Electricity',
-    //   amount: 40.43,
-    //   date: DateTime.now().subtract(
-    //     Duration(days: 3),
-    //   ),
-    // ),
+    Transaction(
+      id: 't1',
+      title: 'New Shoes',
+      amount: 69.99,
+      date: DateTime.now().subtract(
+        Duration(days: 1),
+      ),
+    ),
+    Transaction(
+      id: 't2',
+      title: 'Weekly Groceries',
+      amount: 16.53,
+      date: DateTime.now(),
+    ),
+    Transaction(
+      id: 't3',
+      title: 'Electricity',
+      amount: 40.43,
+      date: DateTime.now().subtract(
+        Duration(days: 3),
+      ),
+    ),
   ];
 
   bool _showChart = false;
@@ -126,9 +126,9 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    final isLandscape =
-        MediaQuery.of(context).orientation == Orientation.landscape;
-
+    final mediaQuery = MediaQuery.of(context);
+    final isLandscape = 
+        mediaQuery.orientation == Orientation.landscape;
     final appBar = AppBar(
       title: Text('Flutter App'),
       actions: <Widget>[
@@ -141,9 +141,9 @@ class _MyHomePageState extends State<MyHomePage> {
 
     final txListWidget = Container(
       child: TransactionList(_userTransactions, _deleteTransaction),
-      height: (MediaQuery.of(context).size.height -
+      height: (mediaQuery.size.height -
               appBar.preferredSize.height -
-              MediaQuery.of(context).padding.top) *
+              mediaQuery.padding.top) *
           0.7,
     );
 
@@ -171,9 +171,9 @@ class _MyHomePageState extends State<MyHomePage> {
             if (!isLandscape)
               Container(
                 child: Chart(_recentTransactions),
-                height: (MediaQuery.of(context).size.height -
+                height: (mediaQuery.size.height -
                         appBar.preferredSize.height -
-                        MediaQuery.of(context).padding.top) *
+                        mediaQuery.padding.top) *
                     0.3,
               ),
             if (!isLandscape) txListWidget,
@@ -181,9 +181,9 @@ class _MyHomePageState extends State<MyHomePage> {
               _showChart
                   ? Container(
                       child: Chart(_recentTransactions),
-                      height: (MediaQuery.of(context).size.height -
+                      height: (mediaQuery.size.height -
                               appBar.preferredSize.height -
-                              MediaQuery.of(context).padding.top) *
+                              mediaQuery.padding.top) *
                           0.7,
                     )
                   : txListWidget
