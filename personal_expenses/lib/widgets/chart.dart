@@ -51,8 +51,11 @@ class Chart extends StatelessWidget {
             // return Text('${data.day}: ${data.amount}');
             return Flexible(
               fit: FlexFit.tight,
-              child: ChartBar(data.day, data.amount,
-                  totalSpending == 0.0 ? 0.0 : data.amount / totalSpending),
+              child: ChartBar(
+                data.day,
+                data.amount,
+                totalSpending == 0.0 ? 0.0 : data.amount / totalSpending,
+              ),
             );
           }).toList(),
         ),
