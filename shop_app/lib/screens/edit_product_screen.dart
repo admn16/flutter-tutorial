@@ -108,7 +108,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
 
     _form.currentState?.save();
 
-    if (_editedProduct.id.length == 0) {
+    if (_editedProduct.id.length != 0) {
       Provider.of<Products>(
         context,
         listen: false,

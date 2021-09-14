@@ -49,3 +49,6 @@ class UserProductsScreen extends StatelessWidget {
     );
   }
 }
+
+// final url = Uri.parse('https://flutter-update.firebaseio.com/products.json')
+// http.post(url, ...)
