@@ -4,6 +4,20 @@ import 'package:provider/provider.dart';
 import '../providers/product.dart';
 import '../providers/products.dart';
 
+class EditFormValues {
+  String title = '';
+  String desription = '';
+  String price = '';
+  String imageUrl = '';
+
+  EditFormValues({
+    this.title = '',
+    this.desription = '',
+    this.imageUrl = '',
+    this.price = '',
+  });
+}
+
 class EditProductScreen extends StatefulWidget {
   static const routeName = '/edit-product';
 
@@ -26,11 +40,36 @@ class _EditProductScreenState extends State<EditProductScreen> {
     price: 0.0,
     title: '',
   );
+  var _isInit = true;
+  var _initValues = EditFormValues();
 
   @override
   void initState() {
     _imageUrlFocusNode.addListener(_updateImageUrl);
     super.initState();
+  }
+
+  @override
+  void didChangeDependencies() {
+    if (_isInit) {
+      final productId = ModalRoute.of(context)?.settings.arguments as String?;
+
+      if (productId != null) {
+        _editedProduct = Provider.of<Products>(
+          context,
+          listen: false,
+        ).findById(productId);
+        _initValues = EditFormValues(
+          desription: _editedProduct.description,
+          imageUrl: '',
+          price: _editedProduct.price.toString(),
+          title: _editedProduct.title,
+        );
+        _imageUrlController.text = _editedProduct.imageUrl;
+      }
+    }
+    _isInit = false;
+    super.didChangeDependencies();
   }
 
   @override
@@ -68,7 +107,21 @@ class _EditProductScreenState extends State<EditProductScreen> {
     }
 
     _form.currentState?.save();
-    Provider.of<Products>(context, listen: false).addProduct(_editedProduct);
+
+    if (_editedProduct.id.length == 0) {
+      Provider.of<Products>(
+        context,
+        listen: false,
+      ).updateProduct(
+        _editedProduct.id,
+        _editedProduct,
+      );
+    } else {
+      Provider.of<Products>(
+        context,
+        listen: false,
+      ).addProduct(_editedProduct);
+    }
     Navigator.of(context).pop();
   }
 
@@ -105,15 +158,17 @@ class _EditProductScreenState extends State<EditProductScreen> {
                     imageUrl: _editedProduct.imageUrl,
                     price: _editedProduct.price,
                     title: value as String,
+                    isFavorite: _editedProduct.isFavorite,
                   );
                 },
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please prvoide a value';
+                    return 'Please provide a title.';
                   }
 
                   return null;
                 },
+                initialValue: _initValues.title,
               ),
               TextFormField(
                 decoration: InputDecoration(
@@ -132,6 +187,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
                     imageUrl: _editedProduct.imageUrl,
                     price: value != null ? double.parse(value) : 0,
                     title: _editedProduct.title,
+                    isFavorite: _editedProduct.isFavorite,
                   );
                 },
                 validator: (value) {
@@ -149,34 +205,38 @@ class _EditProductScreenState extends State<EditProductScreen> {
 
                   return null;
                 },
+                initialValue: _initValues.price,
               ),
               TextFormField(
-                  decoration: InputDecoration(
-                    labelText: 'Description',
-                  ),
-                  maxLines: 3,
-                  keyboardType: TextInputType.multiline,
-                  focusNode: _descriptionFocusNode,
-                  onSaved: (value) {
-                    _editedProduct = Product(
-                      id: _editedProduct.id,
-                      description: value as String,
-                      imageUrl: _editedProduct.imageUrl,
-                      price: _editedProduct.price,
-                      title: _editedProduct.title,
-                    );
-                  },
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please prvoide a description.';
-                    }
+                decoration: InputDecoration(
+                  labelText: 'Description',
+                ),
+                maxLines: 3,
+                keyboardType: TextInputType.multiline,
+                focusNode: _descriptionFocusNode,
+                onSaved: (value) {
+                  _editedProduct = Product(
+                    id: _editedProduct.id,
+                    description: value as String,
+                    imageUrl: _editedProduct.imageUrl,
+                    price: _editedProduct.price,
+                    title: _editedProduct.title,
+                    isFavorite: _editedProduct.isFavorite,
+                  );
+                },
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please prvoide a description.';
+                  }
 
-                    if (value.length < 10) {
-                      return 'Should be at least 10 characters long.';
-                    }
+                  if (value.length < 10) {
+                    return 'Should be at least 10 characters long.';
+                  }
 
-                    return null;
-                  }),
+                  return null;
+                },
+                initialValue: _initValues.desription,
+              ),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
@@ -221,6 +281,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
                           imageUrl: value as String,
                           price: _editedProduct.price,
                           title: _editedProduct.title,
+                          isFavorite: _editedProduct.isFavorite,
                         );
                       },
                       validator: (value) {
@@ -243,6 +304,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
 
                         return null;
                       },
+                      // initialValue: _initValues.imageUrl,
                     ),
                   ),
                 ],
