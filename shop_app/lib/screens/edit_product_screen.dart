@@ -101,7 +101,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
     }
   }
 
-  void _saveForm() {
+  Future<void> _saveForm() async {
     final isvalid = _form.currentState?.validate() as bool;
     if (!isvalid) {
       return;
@@ -121,20 +121,36 @@ class _EditProductScreenState extends State<EditProductScreen> {
         _editedProduct.id,
         _editedProduct,
       );
-      setState(() {
-        _isLoading = true;
-      });
     } else {
-      Provider.of<Products>(
-        context,
-        listen: false,
-      ).addProduct(_editedProduct).then((_) {
+      try {
+        await Provider.of<Products>(
+          context,
+          listen: false,
+        ).addProduct(_editedProduct);
+      } catch (error) {
+        await showDialog<Null>(
+            context: context,
+            builder: (ctx) {
+              return AlertDialog(
+                title: Text('An error occured!'),
+                content: Text('Something went wrong.'),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(ctx).pop();
+                    },
+                    child: Text('Okay'),
+                  ),
+                ],
+              );
+            });
+      } finally {
         setState(() {
-          _isLoading = true;
+          _isLoading = false;
         });
 
         Navigator.of(context).pop();
-      });
+      }
     }
   }
 
@@ -152,7 +168,9 @@ class _EditProductScreenState extends State<EditProductScreen> {
       ),
       body: _isLoading
           ? Center(
-              child: CircularProgressIndicator(),
+              child: CircularProgressIndicator(
+                color: Theme.of(context).accentColor,
+              ),
             )
           : Padding(
               padding: EdgeInsets.all(16),
