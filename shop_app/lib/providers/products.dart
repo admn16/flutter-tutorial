@@ -21,7 +21,7 @@ class Products with ChangeNotifier {
     return _items.firstWhere((element) => element.id == id);
   }
 
-  Future<void> setProducts() async {
+  Future<void> fetchAndSetProducts() async {
     final url = Uri.parse(
       'https://flutter-shop-f137c-default-rtdb.asia-southeast1.firebasedatabase.app/products.json',
     );
