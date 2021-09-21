@@ -5,10 +5,55 @@ import '../providers/cart.dart';
 import '../providers/orders.dart';
 import '../widgets/cart_item.dart' as CI;
 
-class CartScreen extends StatelessWidget {
+class CartScreen extends StatefulWidget {
   static const routeName = '/cart';
 
   const CartScreen({Key? key}) : super(key: key);
+
+  @override
+  _CartScreenState createState() => _CartScreenState();
+}
+
+class _CartScreenState extends State<CartScreen> {
+  var _loading = false;
+
+  Future<void> _orderNow(BuildContext ctx) async {
+    final cart = Provider.of<Cart>(ctx, listen: false);
+    final theme = Theme.of(context);
+
+    try {
+      setState(() {
+        _loading = true;
+      });
+
+      await Provider.of<Orders>(
+        context,
+        listen: false,
+      ).addOrder(
+        cart.items.values.toList(),
+        cart.totalAmount,
+      );
+
+      cart.clear();
+      ScaffoldMessenger.of(ctx).showSnackBar(
+        SnackBar(
+          content: Text('Ordered successfully!'),
+          backgroundColor: theme.accentColor,
+        ),
+      );
+    } catch (error) {
+      ScaffoldMessenger.of(ctx).showSnackBar(
+        SnackBar(
+          content: Text('Failed to submit your order!'),
+          backgroundColor: theme.errorColor,
+        ),
+      );
+    } finally {
+      setState(() {
+        _loading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,24 +86,24 @@ class CartScreen extends StatelessWidget {
                     ),
                     backgroundColor: Theme.of(context).primaryColor,
                   ),
-                  FlatButton(
-                      onPressed: () {
-                        Provider.of<Orders>(
-                          context,
-                          listen: false,
-                        ).addOrder(
-                          cart.items.values.toList(),
-                          cart.totalAmount,
-                        );
-
-                        cart.clear();
-                      },
-                      child: Text(
-                        'ORDER NOW',
-                        style: TextStyle(
-                          color: Theme.of(context).primaryColor,
-                        ),
-                      ))
+                  if (cart.itemCount > 0)
+                    _loading
+                        ? Container(
+                            child: CircularProgressIndicator(
+                              strokeWidth: 4,
+                            ),
+                            margin: EdgeInsets.only(
+                              left: 10,
+                            ),
+                          )
+                        : TextButton(
+                            onPressed: () => _orderNow(context),
+                            child: Text(
+                              'ORDER NOW',
+                              style: TextStyle(
+                                color: Theme.of(context).primaryColor,
+                              ),
+                            ))
                 ],
               ),
             ),
