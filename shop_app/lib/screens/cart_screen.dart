@@ -15,6 +15,81 @@ class CartScreen extends StatefulWidget {
 }
 
 class _CartScreenState extends State<CartScreen> {
+  @override
+  Widget build(BuildContext context) {
+    final cart = Provider.of<Cart>(context);
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Your Cart'),
+      ),
+      body: Column(
+        children: [
+          Card(
+            margin: EdgeInsets.all(15),
+            child: Padding(
+              padding: EdgeInsets.all(8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Total',
+                    style: TextStyle(fontSize: 20),
+                  ),
+                  Spacer(),
+                  Chip(
+                    label: Text(
+                      '\$${cart.totalAmount.toStringAsFixed(2)}',
+                      style: TextStyle(
+                        color: Theme.of(context).primaryTextTheme.title?.color,
+                      ),
+                    ),
+                    backgroundColor: Theme.of(context).primaryColor,
+                  ),
+                  OrderButton(cart: cart),
+                ],
+              ),
+            ),
+          ),
+          SizedBox(
+            height: 10,
+          ),
+          Expanded(
+            child: ListView.builder(
+              itemBuilder: (ctx, i) {
+                var cartItem = cart.items.values.toList()[i];
+                var productId = cart.items.keys.toList()[i];
+
+                return CI.CartItem(
+                  id: cartItem.id,
+                  productId: productId,
+                  price: cartItem.price,
+                  quantity: cartItem.quantity,
+                  title: cartItem.title,
+                );
+              },
+              itemCount: cart.items.length,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class OrderButton extends StatefulWidget {
+  final Cart cart;
+
+  const OrderButton({
+    Key? key,
+    required this.cart,
+  }) : super(key: key);
+
+  @override
+  _OrderButtonState createState() => _OrderButtonState();
+}
+
+class _OrderButtonState extends State<OrderButton> {
   var _loading = false;
 
   Future<void> _orderNow(BuildContext ctx) async {
@@ -57,79 +132,18 @@ class _CartScreenState extends State<CartScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final cart = Provider.of<Cart>(context);
-
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Your Cart'),
-      ),
-      body: Column(
-        children: [
-          Card(
-            margin: EdgeInsets.all(15),
-            child: Padding(
-              padding: EdgeInsets.all(8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Total',
-                    style: TextStyle(fontSize: 20),
-                  ),
-                  Spacer(),
-                  Chip(
-                    label: Text(
-                      '\$${cart.totalAmount.toStringAsFixed(2)}',
-                      style: TextStyle(
-                        color: Theme.of(context).primaryTextTheme.title?.color,
-                      ),
-                    ),
-                    backgroundColor: Theme.of(context).primaryColor,
-                  ),
-                  if (cart.itemCount > 0)
-                    _loading
-                        ? Container(
-                            child: CircularProgressIndicator(
-                              strokeWidth: 4,
-                            ),
-                            margin: EdgeInsets.only(
-                              left: 10,
-                            ),
-                          )
-                        : TextButton(
-                            onPressed: () => _orderNow(context),
-                            child: Text(
-                              'ORDER NOW',
-                              style: TextStyle(
-                                color: Theme.of(context).primaryColor,
-                              ),
-                            ))
-                ],
+    return TextButton(
+      onPressed: widget.cart.totalAmount == 0 || _loading
+          ? null
+          : () => _orderNow(context),
+      child: _loading
+          ? CircularProgressIndicator()
+          : Text(
+              'ORDER NOW',
+              style: TextStyle(
+                color: Theme.of(context).primaryColor,
               ),
             ),
-          ),
-          SizedBox(
-            height: 10,
-          ),
-          Expanded(
-            child: ListView.builder(
-              itemBuilder: (ctx, i) {
-                var cartItem = cart.items.values.toList()[i];
-                var productId = cart.items.keys.toList()[i];
-
-                return CI.CartItem(
-                  id: cartItem.id,
-                  productId: productId,
-                  price: cartItem.price,
-                  quantity: cartItem.quantity,
-                  title: cartItem.title,
-                );
-              },
-              itemCount: cart.items.length,
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'package:shop_app/models/http_exception.dart';
 
 import '../models/cart_item.dart';
 import '../models/order_item.dart';
@@ -45,7 +46,7 @@ class Orders with ChangeNotifier {
         ));
       });
 
-      _orders = loadedOrders;
+      _orders = loadedOrders.reversed.toList();
       notifyListeners();
     } catch (error) {
       throw error;
@@ -58,36 +59,44 @@ class Orders with ChangeNotifier {
     );
     var dateTimeNow = DateTime.now();
 
-    final response = await http.post(
-      url,
-      body: json.encode(
-        {
-          'amount': total,
-          'dateTime': dateTimeNow.toIso8601String(),
-          'products': cartProducts
-              .map((cp) => {
-                    'id': cp.id,
-                    'title': cp.title,
-                    'quantity': cp.quantity,
-                    'price': cp.price,
-                  })
-              .toList(),
-        },
-      ),
-    );
+    try {
+      final response = await http.post(
+        url,
+        body: json.encode(
+          {
+            'amount': total,
+            'dateTime': dateTimeNow.toIso8601String(),
+            'products': cartProducts
+                .map((cp) => {
+                      'id': cp.id,
+                      'title': cp.title,
+                      'quantity': cp.quantity,
+                      'price': cp.price,
+                    })
+                .toList(),
+          },
+        ),
+      );
 
-    final newOrder = OrderItem(
-      amount: total,
-      dateTime: dateTimeNow,
-      id: json.decode(response.body)['name'],
-      products: cartProducts,
-    );
+      if (response.statusCode >= 400) {
+        throw HttpException('Failed to add order');
+      }
 
-    _orders.insert(
-      0,
-      newOrder,
-    );
+      final newOrder = OrderItem(
+        amount: total,
+        dateTime: dateTimeNow,
+        id: json.decode(response.body)['name'],
+        products: cartProducts,
+      );
 
-    notifyListeners();
+      _orders.insert(
+        0,
+        newOrder,
+      );
+
+      notifyListeners();
+    } catch (error) {
+      throw error;
+    }
   }
 }
