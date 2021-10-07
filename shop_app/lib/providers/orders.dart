@@ -8,7 +8,17 @@ import '../models/cart_item.dart';
 import '../models/order_item.dart';
 
 class Orders with ChangeNotifier {
+  final String? authToken;
+  final String? userId;
   List<OrderItem> _orders = [];
+
+  Orders({
+    required List<OrderItem> orderItems,
+    required this.authToken,
+    required this.userId,
+  }) {
+    _orders = orderItems;
+  }
 
   List<OrderItem> get orders {
     return [..._orders];
@@ -17,11 +27,13 @@ class Orders with ChangeNotifier {
   Future<void> fetchAndSetOrders() async {
     try {
       final url = Uri.parse(
-        'https://flutter-shop-f137c-default-rtdb.asia-southeast1.firebasedatabase.app/orders.json',
+        'https://flutter-shop-f137c-default-rtdb.asia-southeast1.firebasedatabase.app/orders/$userId.json?auth=$authToken',
       );
 
       final response = await http.get(url);
-      final extractedData = json.decode(response.body) as Map<String, dynamic>;
+      final extractedData = response.body == "null"
+          ? {}
+          : json.decode(response.body) as Map<String, dynamic>;
       final List<OrderItem> loadedOrders = [];
 
       extractedData.forEach((orderId, orderData) {
@@ -55,7 +67,7 @@ class Orders with ChangeNotifier {
 
   Future<void> addOrder(List<CartItem> cartProducts, double total) async {
     final url = Uri.parse(
-      'https://flutter-shop-f137c-default-rtdb.asia-southeast1.firebasedatabase.app/orders.json',
+      'https://flutter-shop-f137c-default-rtdb.asia-southeast1.firebasedatabase.app/orders/$userId.json?auth=$authToken',
     );
     var dateTimeNow = DateTime.now();
 
@@ -67,12 +79,14 @@ class Orders with ChangeNotifier {
             'amount': total,
             'dateTime': dateTimeNow.toIso8601String(),
             'products': cartProducts
-                .map((cp) => {
-                      'id': cp.id,
-                      'title': cp.title,
-                      'quantity': cp.quantity,
-                      'price': cp.price,
-                    })
+                .map(
+                  (cp) => {
+                    'id': cp.id,
+                    'title': cp.title,
+                    'quantity': cp.quantity,
+                    'price': cp.price,
+                  },
+                )
                 .toList(),
           },
         ),
